@@ -1,9 +1,9 @@
 ;; Welsh Street Rewards
 
-(use-trait sip-010 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait sip-010 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
-;; welshcorgicoin - use .welshcorgicoin for devnet
-(define-constant WELSH .welshcorgicoin)
+;; welshcorgicoin - mainnet
+(define-constant WELSH 'SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token)
 
 ;; errors
 (define-constant ERR_ZERO_AMOUNT (err u800))
@@ -607,7 +607,7 @@
 
 (define-read-only (get-cleanup-rewards)
   (let (
-    (actual-a (unwrap-panic (contract-call? .welshcorgicoin get-balance .rewards)))
+    (actual-a (unwrap-panic (contract-call? 'SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token get-balance .rewards)))
     (actual-b (unwrap-panic (contract-call? .street get-balance .rewards)))
     (distributed-a (var-get total-distributed-a))
     (distributed-b (var-get total-distributed-b))
@@ -651,7 +651,7 @@
     (ok {
       global-index-a: (var-get global-index-a),
       global-index-b: (var-get global-index-b),
-      rewards-a: (unwrap-panic (contract-call? .welshcorgicoin get-balance .rewards)),
+      rewards-a: (unwrap-panic (contract-call? 'SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token get-balance .rewards)),
       rewards-b: (unwrap-panic (contract-call? .street get-balance .rewards)),
     })
 )

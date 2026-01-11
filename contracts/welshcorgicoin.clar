@@ -1,13 +1,12 @@
-;; Welshcorgicoin - Mock token for devnet testing
-;; For testnet use: ST3Q0826K15YSHP5GTFJ3CW347JQRM0E1FENT6XWD.welshcorgicoin
-;; For mainnet use: SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token
+;; Welshcorgicoin - Mock token for local devnet testing only
+;; Mainnet contract: SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token
 
 (define-constant ERR-UNAUTHORIZED u1)
 (define-constant ERR-YOU-POOR u2)
 (define-fungible-token welshcorgicoin)
 (define-data-var token-uri (optional (string-utf8 256)) none)
 (define-constant contract-creator tx-sender)
-(impl-trait 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
+(impl-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; SIP-010 Standard
 ;; #[allow(unchecked_data)]

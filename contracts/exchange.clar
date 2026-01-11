@@ -1,9 +1,9 @@
 ;; Welsh Street Exchange
 
-(use-trait sip-010 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait sip-010 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
-;; welshcorgicoin - use .welshcorgicoin for devnet
-(define-constant WELSH .welshcorgicoin)
+;; welshcorgicoin - mainnet
+(define-constant WELSH 'SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token)
 
 ;; errors
 (define-constant ERR_ZERO_AMOUNT (err u700))
