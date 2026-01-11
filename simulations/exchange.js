@@ -2,31 +2,38 @@ import { SimulationBuilder } from "stxer";
 import { uintCV, principalCV, noneCV } from "@stacks/transactions";
 import { readFileSync } from "fs";
 
-// Load contract sources
+// Load contract sources - order matters for dependencies!
 const welshcorgicoinSource = readFileSync("./contracts/welshcorgicoin.clar", "utf8");
-const streetSource = readFileSync("./contracts/street.clar", "utf8");
 const creditSource = readFileSync("./contracts/credit.clar", "utf8");
+const streetSource = readFileSync("./contracts/street.clar", "utf8");
 const rewardsSource = readFileSync("./contracts/rewards.clar", "utf8");
 const exchangeSource = readFileSync("./contracts/exchange.clar", "utf8");
 
-// Addresses
-const deployer = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
-const wallet1 = "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
+// Use mainnet addresses since contracts reference mainnet SIP-010 trait
+const deployer = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE"; // mainnet (SIP-010 owner)
+const wallet1 = "SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G"; // welshcorgicoin owner
 
-console.log("=== EXCHANGE STXER SIMULATIONS ===\n");
+console.log("=== EXCHANGE STXER SIMULATIONS (MAINNET) ===\n");
+
+// Helper to deploy all DEX contracts in correct order
+function addDexContracts(builder) {
+  return builder
+    .addContractDeploy({ contract_name: "welshcorgicoin", source_code: welshcorgicoinSource })
+    .addContractDeploy({ contract_name: "credit", source_code: creditSource })
+    .addContractDeploy({ contract_name: "street", source_code: streetSource })
+    .addContractDeploy({ contract_name: "rewards", source_code: rewardsSource })
+    .addContractDeploy({ contract_name: "exchange", source_code: exchangeSource });
+}
 
 // Simulation 1: Deploy all contracts and mint STREET
 console.log("1. Deploy DEX contracts and mint STREET tokens...");
 try {
   const mintAmount = 100_000_000_000_000n; // 100M STREET
 
-  const sim1 = await SimulationBuilder.new({ network: "testnet" })
-    .withSender(deployer)
-    .addContractDeploy({ contract_name: "welshcorgicoin", source_code: welshcorgicoinSource })
-    .addContractDeploy({ contract_name: "street", source_code: streetSource })
-    .addContractDeploy({ contract_name: "credit", source_code: creditSource })
-    .addContractDeploy({ contract_name: "rewards", source_code: rewardsSource })
-    .addContractDeploy({ contract_name: "exchange", source_code: exchangeSource })
+  let builder = SimulationBuilder.new({ network: "mainnet" }).withSender(deployer);
+  builder = addDexContracts(builder);
+
+  const sim1 = await builder
     .addContractCall({
       contract_id: `${deployer}.street`,
       function_name: "street-mint",
@@ -35,7 +42,7 @@ try {
     .run();
 
   console.log("   Simulation ID:", sim1);
-  console.log("   View at: https://stxer.xyz/simulations/testnet/" + sim1);
+  console.log("   View at: https://stxer.xyz/simulations/mainnet/" + sim1);
 } catch (e) {
   console.log("   Error:", e.message);
 }
@@ -48,13 +55,10 @@ try {
   const welshLiq = 1_000_000_000_000n; // 1M WELSH
   const streetLiq = 1_000_000_000_000n; // 1M STREET
 
-  const sim2 = await SimulationBuilder.new({ network: "testnet" })
-    .withSender(deployer)
-    .addContractDeploy({ contract_name: "welshcorgicoin", source_code: welshcorgicoinSource })
-    .addContractDeploy({ contract_name: "street", source_code: streetSource })
-    .addContractDeploy({ contract_name: "credit", source_code: creditSource })
-    .addContractDeploy({ contract_name: "rewards", source_code: rewardsSource })
-    .addContractDeploy({ contract_name: "exchange", source_code: exchangeSource })
+  let builder = SimulationBuilder.new({ network: "mainnet" }).withSender(deployer);
+  builder = addDexContracts(builder);
+
+  const sim2 = await builder
     .addContractCall({
       contract_id: `${deployer}.street`,
       function_name: "street-mint",
@@ -73,7 +77,7 @@ try {
     .run();
 
   console.log("   Simulation ID:", sim2);
-  console.log("   View at: https://stxer.xyz/simulations/testnet/" + sim2);
+  console.log("   View at: https://stxer.xyz/simulations/mainnet/" + sim2);
 } catch (e) {
   console.log("   Error:", e.message);
 }
@@ -87,13 +91,10 @@ try {
   const streetLiq = 10_000_000_000_000n; // 10M STREET
   const swapAmount = 100_000_000_000n; // 100K WELSH
 
-  const sim3 = await SimulationBuilder.new({ network: "testnet" })
-    .withSender(deployer)
-    .addContractDeploy({ contract_name: "welshcorgicoin", source_code: welshcorgicoinSource })
-    .addContractDeploy({ contract_name: "street", source_code: streetSource })
-    .addContractDeploy({ contract_name: "credit", source_code: creditSource })
-    .addContractDeploy({ contract_name: "rewards", source_code: rewardsSource })
-    .addContractDeploy({ contract_name: "exchange", source_code: exchangeSource })
+  let builder = SimulationBuilder.new({ network: "mainnet" }).withSender(deployer);
+  builder = addDexContracts(builder);
+
+  const sim3 = await builder
     .addContractCall({
       contract_id: `${deployer}.street`,
       function_name: "street-mint",
@@ -112,7 +113,7 @@ try {
     .run();
 
   console.log("   Simulation ID:", sim3);
-  console.log("   View at: https://stxer.xyz/simulations/testnet/" + sim3);
+  console.log("   View at: https://stxer.xyz/simulations/mainnet/" + sim3);
 } catch (e) {
   console.log("   Error:", e.message);
 }
@@ -125,13 +126,10 @@ try {
   const welshLiq = 1_000_000_000_000n;
   const streetLiq = 1_000_000_000_000n;
 
-  const sim4 = await SimulationBuilder.new({ network: "testnet" })
-    .withSender(deployer)
-    .addContractDeploy({ contract_name: "welshcorgicoin", source_code: welshcorgicoinSource })
-    .addContractDeploy({ contract_name: "street", source_code: streetSource })
-    .addContractDeploy({ contract_name: "credit", source_code: creditSource })
-    .addContractDeploy({ contract_name: "rewards", source_code: rewardsSource })
-    .addContractDeploy({ contract_name: "exchange", source_code: exchangeSource })
+  let builder = SimulationBuilder.new({ network: "mainnet" }).withSender(deployer);
+  builder = addDexContracts(builder);
+
+  const sim4 = await builder
     .addContractCall({
       contract_id: `${deployer}.street`,
       function_name: "street-mint",
@@ -155,7 +153,7 @@ try {
     .run();
 
   console.log("   Simulation ID:", sim4);
-  console.log("   View at: https://stxer.xyz/simulations/testnet/" + sim4);
+  console.log("   View at: https://stxer.xyz/simulations/mainnet/" + sim4);
 } catch (e) {
   console.log("   Error:", e.message);
 }
@@ -164,13 +162,10 @@ console.log("");
 // Simulation 5: Non-owner liquidity (should fail)
 console.log("5. Non-owner initial liquidity (expect err u701)...");
 try {
-  const sim5 = await SimulationBuilder.new({ network: "testnet" })
-    .withSender(deployer)
-    .addContractDeploy({ contract_name: "welshcorgicoin", source_code: welshcorgicoinSource })
-    .addContractDeploy({ contract_name: "street", source_code: streetSource })
-    .addContractDeploy({ contract_name: "credit", source_code: creditSource })
-    .addContractDeploy({ contract_name: "rewards", source_code: rewardsSource })
-    .addContractDeploy({ contract_name: "exchange", source_code: exchangeSource })
+  let builder = SimulationBuilder.new({ network: "mainnet" }).withSender(deployer);
+  builder = addDexContracts(builder);
+
+  const sim5 = await builder
     .withSender(wallet1)
     .addContractCall({
       contract_id: `${deployer}.exchange`,
@@ -180,7 +175,7 @@ try {
     .run();
 
   console.log("   Simulation ID:", sim5);
-  console.log("   View at: https://stxer.xyz/simulations/testnet/" + sim5);
+  console.log("   View at: https://stxer.xyz/simulations/mainnet/" + sim5);
 } catch (e) {
   console.log("   Error:", e.message);
 }
