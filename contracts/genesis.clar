@@ -1,29 +1,153 @@
-;; title: genesis
-;; version:
-;; summary:
-;; description:
+;; Welsh Street Liquidity Generation Event (Genesis)
 
-;; traits
-;;
+(use-trait sip-010 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
 
-;; token definitions
-;;
+;; welshcorgicoin - use .welshcorgicoin for devnet
+(define-constant WELSH .welshcorgicoin)
 
-;; constants
-;;
+;; errors
+(define-constant ERR_ZERO_AMOUNT (err u1000))
+(define-constant ERR_NOT_CONTRACT_OWNER (err u1001))
+(define-constant ERR_NOT_ACTIVE_FUND (err u1002))
 
-;; data vars
-;;
+;; metadata
+(define-constant CONTRACT_OWNER tx-sender)
+(define-constant TOTAL_STREET u1000000000000000)
 
-;; data maps
-;;
+;; variables
+(define-data-var claim-active bool false)
+(define-data-var contribute-active bool true)
+(define-data-var total-contribution uint u0)
 
-;; public functions
-;;
+(define-map balances
+    { address: principal }
+    { balance: uint,
+    claimed: uint }
+)
 
-;; read only functions
-;;
+(define-public (claim)
+    (let (
+        (user-balance-info (default-to { balance: u0 } (map-get? balances { address: tx-sender })))
+        (user-balance (get balance user-balance-info))
+        (total-contrib (var-get total-contribution))
+        (user-claim (if (> total-contrib u0)
+                            (/ (* user-balance TOTAL_STREET) total-contrib)
+                            u0))
+    )
+    (begin
+        (asserts! (is-eq (var-get claim-active) true) ERR_NOT_ACTIVE_FUND)
+        (asserts! (> user-balance u0) ERR_ZERO_AMOUNT)
+        (try! (transformer .street user-claim tx-sender))
+        (map-set balances { address: tx-sender } {
+            balance: u0,
+            claimed: user-claim
+            })
+        (ok {
+            balance: user-balance,
+            claimed: user-claim
+        })
+    )
+    )
+)
 
-;; private functions
-;;
+;; #[allow(unchecked_data)]
+(define-public (contribute (amount uint))
+    (let (
+        (current-total (var-get total-contribution))
+        (current-balance (default-to { balance: u0 } (map-get? balances { address: tx-sender })))
+        (previous-balance (get balance current-balance))
+        (new-balance (+ previous-balance amount))
+        (new-total (+ current-total amount))
+    )
+    (begin
+        (asserts! (is-eq (var-get contribute-active) true) ERR_NOT_ACTIVE_FUND)
+        (asserts! (> amount u0) ERR_ZERO_AMOUNT)
+        (try! (contract-call? WELSH transfer amount tx-sender .genesis none))
+        (var-set total-contribution new-total)
+        (map-set balances { address: tx-sender } {
+            balance: new-balance,
+            claimed: u0
+        })
+    (ok {
+        amount: amount,
+        total: new-total
+        })
+    )
+    )
+)
 
+;; #[allow(unchecked_data)]
+(define-public (transformer
+    (token <sip-010>)
+    (amount uint)
+    (recipient principal)
+    )
+    (as-contract (contract-call? token transfer amount tx-sender recipient none))
+)
+
+;; #[allow(unchecked_data)]
+(define-public (withdrawal)
+    (let (
+        (balance (unwrap-panic (contract-call? WELSH get-balance .genesis)))
+    )
+        (begin
+            (asserts! (> balance u0) ERR_ZERO_AMOUNT)
+            (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_CONTRACT_OWNER)
+            (try! (transformer WELSH balance CONTRACT_OWNER))
+            (ok balance)
+        )
+    )
+)
+
+;; custom read-only
+(define-read-only (get-blocks)
+    (ok {
+        stacks-block: stacks-block-height,
+        bitcoin-block: burn-block-height
+    })
+)
+
+(define-public (set-claim-active)
+    (begin
+        (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_CONTRACT_OWNER)
+        (if (var-get claim-active)
+            (begin
+                (var-set claim-active false)
+            )
+            (begin
+                (var-set claim-active true)
+            )
+        )
+        (ok (var-get claim-active))
+    )
+)
+
+(define-public (set-contribute-active)
+    (begin
+        (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_NOT_CONTRACT_OWNER)
+        (if (var-get contribute-active)
+            (begin
+                (var-set contribute-active false)
+            )
+            (begin
+                (var-set contribute-active true)
+            )
+        )
+        (ok (var-get contribute-active))
+    )
+)
+
+(define-read-only (get-claim-active)
+    (ok (var-get claim-active))
+)
+
+(define-read-only (get-contribute-active)
+    (ok (var-get contribute-active))
+)
+
+(define-read-only (get-total-contribution)
+    (ok (var-get total-contribution))
+)
+
+(define-read-only (get-user-balance (address principal))
+    (ok (default-to { balance: u0, claimed: u0 } (map-get? balances { address: address }))))
