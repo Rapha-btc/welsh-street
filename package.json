@@ -7,7 +7,10 @@
   "scripts": {
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
-    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
+    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
+    "simul": "node --experimental-vm-modules simulations/index.js",
+    "simul:welsh": "node --experimental-vm-modules simulations/welsh-token.js",
+    "simul:exchange": "node --experimental-vm-modules simulations/exchange.js"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +19,7 @@
     "@stacks/transactions": "^7.2.0",
     "@types/node": "^24.4.0",
     "chokidar-cli": "^3.0.0",
+    "stxer": "^0.4.5",
     "vitest": "^4.0.7",
     "vitest-environment-clarinet": "^3.0.0"
   }
